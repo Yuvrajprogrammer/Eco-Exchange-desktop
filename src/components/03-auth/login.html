@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoExchange - Enterprise Login</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body class="bg-[#020617] text-slate-100 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
+
+  <!-- Top Taskbar / Navigation -->
+  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90">
+    <div class="flex items-center space-x-3">
+      <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
+      <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
+    </div>
+    <div class="no-drag flex items-center space-x-2">
+      <a href="../02-public-home/public-home.html" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors">
+        ← Back to Public Feed
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 overflow-y-auto flex items-center justify-center p-6 bg-gradient-to-b from-slate-950/40 to-slate-950">
+    <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 max-w-md w-full backdrop-blur-xl shadow-2xl shadow-emerald-950/30">
+      
+      <div class="text-center mb-6">
+        <h1 class="text-xl font-black tracking-tight text-white uppercase">Enterprise Login</h1>
+        <p class="text-xs text-slate-400 mt-1">Authenticate your credentials to access the Delhi-NCR trading hub.</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="space-y-4">
+        
+        <!-- Corporate Email -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Corporate Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            required 
+            placeholder="admin@apextextiles.co.in" 
+            class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+          />
+        </div>
+
+        <!-- Secure Password -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Secure Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            placeholder="••••••••••••" 
+            class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+          />
+        </div>
+
+        <!-- Error Message Container -->
+        <div id="errorMsg" class="hidden text-xs text-red-400 bg-red-950/30 border border-red-500/20 p-3 rounded-xl"></div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          id="submitBtn"
+          class="w-full mt-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-950/50 transition-all cursor-pointer">
+          Authenticate & Enter Hub
+        </button>
+
+      </form>
+
+      <!-- Footer switch to signup -->
+      <div class="mt-6 text-center text-xs text-slate-400">
+        New industrial entity? 
+        <a href="signup.html" class="text-emerald-400 hover:underline font-bold ml-1">Register here</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Bottom Footer Status -->
+  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500">
+    <div>EcoExchange Authentication Core</div>
+    <div>Secure B2B Prototype v1.0</div>
+  </div>
+
+  <!-- Firebase Login Script -->
+  <script type="module">
+    import { auth } from '../../firebase-config.js';
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
+
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add('hidden');
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Authenticating...";
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // Redirect to Buy/Sell Dashboard upon successful login
+        window.location.href = '../04-dashboard/buy-sell-dashboard.html';
+      } catch (error) {
+        console.error("Login error:", error);
+        errorMsg.textContent = "Authentication failed: Check your email or password.";
+        errorMsg.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Authenticate & Enter Hub";
+      }
+    });
+  </script>
+</body>
+</html>
