@@ -1,6 +1,11 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
+// Enable isolated session data when running a secondary test instance
+if (process.argv.includes('--user-data-2')) {
+  app.setPath('userData', path.join(app.getPath('appData'), 'EcoExchange-TestUser2'));
+}
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1024,

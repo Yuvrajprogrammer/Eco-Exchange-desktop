@@ -1,121 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebase.com https://*.cloudfunctions.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://*.gstatic.com https://*.googleapis.com; connect-src *;">
   <title>EcoExchange - Enterprise Login</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../../styles/main.css">
 </head>
-<body class="bg-[#020617] text-slate-100 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center px-4">
 
-  <!-- Top Taskbar / Navigation -->
-  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90">
-    <div class="flex items-center space-x-3">
-      <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
-      <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
+  <div class="max-w-md w-full bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700 relative">
+    
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold tracking-wider text-emerald-400">ECOEXCHANGE</h1>
+      <p class="text-sm text-slate-400 mt-1">Delhi-NCR B2B Industrial Symbiosis Portal</p>
     </div>
-    <div class="no-drag flex items-center space-x-2">
-      <a href="../02-public-home/public-home.html" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors">
-        ← Back to Public Feed
-      </a>
+
+    <!-- Error/Status Message Banner -->
+    <div id="errorMsg" class="hidden mb-4 p-3 bg-rose-500/20 border border-rose-500 text-rose-300 text-sm rounded-lg"></div>
+
+    <form id="loginForm" class="space-y-4">
+      <!-- GSTIN Input -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">15-Digit GSTIN</label>
+        <input 
+          type="text" 
+          id="gstin" 
+          required 
+          maxlength="15" 
+          placeholder="e.g. 07AAACM2007J1ZU" 
+          class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 uppercase focus:outline-none focus:border-emerald-500 font-mono tracking-wide"
+        >
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          required 
+          placeholder="••••••••" 
+          class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+        >
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        id="submitBtn"
+        class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold py-2.5 rounded-lg transition-colors shadow-lg shadow-emerald-600/20 mt-2"
+      >
+        Sign In to Marketplace
+      </button>
+    </form>
+
+    <!-- Register Link -->
+    <div class="text-center mt-6">
+      <p class="text-xs text-slate-400">
+        New industrial unit? 
+        <a href="./signup.html" class="text-emerald-400 hover:underline font-semibold">Register Entity</a>
+      </p>
     </div>
   </div>
 
-  <!-- Main Content Container -->
-  <main class="flex-1 overflow-y-auto flex items-center justify-center p-6 bg-gradient-to-b from-slate-950/40 to-slate-950">
-    <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 max-w-md w-full backdrop-blur-xl shadow-2xl shadow-emerald-950/30">
-      
-      <div class="text-center mb-6">
-        <h1 class="text-xl font-black tracking-tight text-white uppercase">Enterprise Login</h1>
-        <p class="text-xs text-slate-400 mt-1">Authenticate your credentials to access the Delhi-NCR trading hub.</p>
-      </div>
-
-      <!-- Login Form -->
-      <form id="loginForm" class="space-y-4">
-        
-        <!-- Corporate Email -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Corporate Email Address</label>
-          <input 
-            type="email" 
-            id="email" 
-            required 
-            placeholder="admin@apextextiles.co.in" 
-            class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-        </div>
-
-        <!-- Secure Password -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Secure Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            required 
-            placeholder="••••••••••••" 
-            class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-        </div>
-
-        <!-- Error Message Container -->
-        <div id="errorMsg" class="hidden text-xs text-red-400 bg-red-950/30 border border-red-500/20 p-3 rounded-xl"></div>
-
-        <!-- Submit Button -->
-        <button 
-          type="submit" 
-          id="submitBtn"
-          class="w-full mt-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-950/50 transition-all cursor-pointer">
-          Authenticate & Enter Hub
-        </button>
-
-      </form>
-
-      <!-- Footer switch to signup -->
-      <div class="mt-6 text-center text-xs text-slate-400">
-        New industrial entity? 
-        <a href="signup.html" class="text-emerald-400 hover:underline font-bold ml-1">Register here</a>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Bottom Footer Status -->
-  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500">
-    <div>EcoExchange Authentication Core</div>
-    <div>Secure B2B Prototype v1.0</div>
-  </div>
-
-  <!-- Firebase Login Script -->
+  <!-- Self-Contained Firebase & Login Handler Script -->
   <script type="module">
-    import { auth } from '../../firebase-config.js';
-    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Your Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3lvy7ue2Ydc5vfoIaWo6T7mTs6ZOj8Uw",
+      authDomain: "ecoexchange-delhincr.firebaseapp.com",
+      projectId: "ecoexchange-delhincr",
+      storageBucket: "ecoexchange-delhincr.firebasestorage.app",
+      messagingSenderId: "706965615607",
+      appId: "1:706965615607:web:f5f1e1985bce759207f4f2",
+      measurementId: "G-L1GEHS58BR"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     const form = document.getElementById('loginForm');
+    const gstinInput = document.getElementById('gstin');
+    const passwordInput = document.getElementById('password');
     const errorMsg = document.getElementById('errorMsg');
     const submitBtn = document.getElementById('submitBtn');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMsg.classList.add('hidden');
-      
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+
+      const gstin = gstinInput.value.trim().toUpperCase();
+      const password = passwordInput.value;
 
       submitBtn.disabled = true;
-      submitBtn.textContent = "Authenticating...";
+      submitBtn.textContent = "Verifying GSTIN & Signing In...";
 
       try {
+        // 1. Query Firestore enterprises collection to find the email tied to this GSTIN
+        const q = query(collection(db, "enterprises"), where("gstin", "==", gstin));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error("No enterprise found registered with this GSTIN. Please check your number or register first.");
+        }
+
+        // Extract corporate email from the enterprise document
+        const enterpriseData = querySnapshot.docs[0].data();
+        const email = enterpriseData.email;
+
+        if (!email) {
+          throw new Error("Account configuration error: No email linked to this GSTIN.");
+        }
+
+        // 2. Authenticate user with Firebase Auth using the retrieved email and password
         await signInWithEmailAndPassword(auth, email, password);
-        // Redirect to Buy/Sell Dashboard upon successful login
-        window.location.href = '../04-dashboard/buy-sell-dashboard.html';
+
+        console.log("Login successful! Redirecting to marketplace feed...");
+
+        // 3. Redirect to Marketplace Buy Feed
+        window.location.href = '../04-buy/buy-feed.html';
+
       } catch (error) {
         console.error("Login error:", error);
-        errorMsg.textContent = "Authentication failed: Check your email or password.";
+        errorMsg.textContent = "Login failed: " + error.message;
         errorMsg.classList.remove('hidden');
         submitBtn.disabled = false;
-        submitBtn.textContent = "Authenticate & Enter Hub";
+        submitBtn.textContent = "Sign In to Marketplace";
       }
     });
   </script>

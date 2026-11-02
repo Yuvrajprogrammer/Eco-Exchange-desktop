@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoExchange - Your Placed Orders</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body class="bg-[#020617] text-slate-100 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
+
+  <!-- Top Taskbar -->
+  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90 z-40">
+    <div class="flex items-center space-x-3">
+      <button id="sidebarToggle" class="no-drag text-slate-400 hover:text-emerald-400 focus:outline-none transition-colors p-1 rounded-lg hover:bg-slate-900 cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
+      <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
+    </div>
+    <div class="no-drag flex items-center space-x-4">
+      <div class="text-xs text-slate-300 hidden md:block">
+        <span class="text-slate-500">Entity:</span> <strong id="entityNameDisplay" class="text-emerald-400">Loading...</strong>
+      </div>
+      <button id="signOutBtn" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 border border-slate-800 transition-all cursor-pointer">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- App Body -->
+  <div class="flex flex-1 relative overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-30 absolute inset-y-0 left-0 -translate-x-full shadow-2xl">
+      <div class="p-4 space-y-2">
+        <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 pb-2">Task Bar Menu</div>
+        <a href="../04-buy/buy-feed.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Buy Feed</a>
+        <a href="../05-sell/sell-request.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Sell Option</a>
+        <a href="hub.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold tracking-wide">Update Option</a>
+        <a href="../07-chat/chat.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Dealer Chat</a>
+        <a href="../08-settings/settings.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Settings</a>
+      </div>
+      <div class="p-4 border-t border-slate-800/80 text-[10px] text-slate-500 text-center uppercase">EcoExchange v1.0.0</div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-950/40 to-slate-950 w-full">
+      <div class="max-w-5xl mx-auto space-y-6">
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-black tracking-tight text-white uppercase">Your Placed Purchase Orders</h1>
+            <p class="text-xs text-slate-400 mt-1">Review orders placed with verified industrial dealers. Click any row to inspect, pay, or chat.</p>
+          </div>
+          <a href="hub.html" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold uppercase transition-all">← Back to Hub</a>
+        </div>
+
+        <!-- Orders Table Container -->
+        <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h3 class="text-sm font-black text-emerald-400 uppercase tracking-wider">Active & Completed Orders</h3>
+            <div class="relative w-full md:w-64">
+              <input type="text" id="orderFilter" onkeyup="filterOrders()" placeholder="Filter orders by ID, product..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" />
+            </div>
+          </div>
+
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                  <th class="p-3">Order ID</th>
+                  <th class="p-3">Dealer / Seller</th>
+                  <th class="p-3">Product</th>
+                  <th class="p-3">Quantity</th>
+                  <th class="p-3">Total Investment</th>
+                  <th class="p-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+                <tr><td colspan="6" class="p-6 text-center text-slate-500 italic">Loading your orders...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ORDER DETAILS ENLARGED MODAL (Row Click) -->
+  <div id="orderModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 px-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-black uppercase tracking-wider text-emerald-400">Order Management & Actions</h3>
+        <button onclick="closeOrderModal()" class="text-slate-400 hover:text-white font-bold cursor-pointer">✕</button>
+      </div>
+      <div id="modalOrderInfo" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2"></div>
+      
+      <div class="flex flex-col gap-2 pt-2" id="modalActionButtons"></div>
+    </div>
+  </div>
+
+  <!-- MOCK PAYTM PAYMENT GATEWAY MODAL -->
+  <div id="paytmModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center z-50 px-4">
+    <div class="bg-blue-950 border border-blue-500/40 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative space-y-5 text-center">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-black text-cyan-400 uppercase tracking-widest">Paytm Secure Gateway</span>
+        <button onclick="closePaytmModal()" class="text-slate-400 hover:text-white font-bold cursor-pointer">✕</button>
+      </div>
+      
+      <div class="bg-blue-900/40 border border-blue-500/30 p-4 rounded-2xl space-y-2">
+        <span class="text-[10px] text-cyan-300 uppercase block font-semibold">Total Amount Due (Un-editable)</span>
+        <h2 id="paytmAmount" class="text-3xl font-black text-white font-mono">₹0</h2>
+      </div>
+
+      <div class="space-y-2 text-left text-xs text-slate-300">
+        <label class="block text-[10px] font-bold uppercase text-slate-400">Payment Mode</label>
+        <div class="bg-blue-900/20 border border-blue-500/30 p-3 rounded-xl flex items-center justify-between">
+          <span>B2B Industrial Escrow UPI</span>
+          <span class="text-cyan-400 font-bold">Verified</span>
+        </div>
+      </div>
+
+      <button onclick="executePaytmPayment()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-cyan-500/30 cursor-pointer">
+        Pay Securely Now
+      </button>
+    </div>
+  </div>
+
+  <!-- PAYTM CELEBRATION OVERLAY -->
+  <div id="celebrationOverlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-lg hidden flex-col items-center justify-center z-50 space-y-4">
+    <div class="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-emerald-400 text-4xl animate-bounce">
+      ✓
+    </div>
+    <h2 class="text-2xl font-black text-white uppercase tracking-wider">Payment Successful!</h2>
+    <p class="text-xs text-slate-400">Paytm Transaction verified and recorded in your financial ledger.</p>
+  </div>
+
+  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500 z-40">
+    <div>EcoExchange Your Orders Hub</div>
+    <div>Secure B2B Prototype v1.0</div>
+  </div>
+
+  <!-- Script -->
+  <script type="module">
+    import { db, auth } from '../../firebase-config.js';
+    import { collection, getDocs, doc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    let currentUser = null;
+    let allMyOrders = [];
+    let activeOrderToPay = null;
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('-translate-x-full');
+      });
+      document.addEventListener('click', (e) => {
+        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+          sidebar.classList.add('-translate-x-full');
+        }
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const userDoc = await getDoc(doc(db, "enterprises", user.uid));
+        const entityName = userDoc.exists() ? userDoc.data().entityName : user.email;
+        document.getElementById('entityNameDisplay').textContent = entityName;
+        await loadMyOrders();
+      } else {
+        window.location.href = '../03-auth/login.html';
+      }
+    });
+
+    async function loadMyOrders() {
+      try {
+        const ordersSnap = await getDocs(collection(db, "orders"));
+        allMyOrders = [];
+        ordersSnap.forEach(d => {
+          const dat = d.data();
+          if (dat.buyerUid === currentUser.uid) {
+            allMyOrders.push({ id: d.id, ...dat });
+          }
+        });
+        renderOrdersTable(allMyOrders);
+      } catch (err) {
+        console.error("Error loading orders:", err);
+      }
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById("ordersTableBody");
+      if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500 italic">You have not placed any purchase orders yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = orders.map(ord => `
+        <tr onclick="openOrderModal('${ord.id}')" class="hover:bg-slate-900/60 transition-colors cursor-pointer">
+          <td class="p-3 font-mono text-emerald-400 font-bold">${ord.orderId}</td>
+          <td class="p-3 font-bold text-white">${ord.dealerName || 'Dealer'}</td>
+          <td class="p-3 text-slate-300">${ord.productType}</td>
+          <td class="p-3">${ord.tons} Tons</td>
+          <td class="p-3 font-mono">₹${Number(ord.totalPrice).toLocaleString('en-IN')}</td>
+          <td class="p-3"><span class="px-2 py-1 rounded-lg text-[10px] font-bold ${ord.status === 'Paid' ? 'bg-emerald-500/20 text-emerald-400' : ord.status === 'Approved' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'}">${ord.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    window.filterOrders = function() {
+      const filter = document.getElementById('orderFilter').value.toLowerCase();
+      const filtered = allMyOrders.filter(o => o.orderId.toLowerCase().includes(filter) || o.productType.toLowerCase().includes(filter) || o.dealerName.toLowerCase().includes(filter));
+      renderOrdersTable(filtered);
+    }
+
+    window.openOrderModal = function(orderId) {
+      const ord = allMyOrders.find(o => o.id === orderId);
+      if (!ord) return;
+      activeOrderToPay = ord;
+
+      document.getElementById('modalOrderInfo').innerHTML = `
+        <div><strong class="text-slate-400">Order ID:</strong> <span class="font-mono text-emerald-400">${ord.orderId}</span></div>
+        <div><strong class="text-slate-400">Dealer / Seller:</strong> <span class="text-white">${ord.dealerName}</span></div>
+        <div><strong class="text-slate-400">Product:</strong> ${ord.productType} (${ord.tons} Tons)</div>
+        <div><strong class="text-slate-400">Total Price:</strong> <span class="font-mono text-emerald-400">₹${Number(ord.totalPrice).toLocaleString('en-IN')}</span></div>
+        <div><strong class="text-slate-400">Current Status:</strong> ${ord.status}</div>
+      `;
+
+      let actions = `
+        <a href="../07-chat/chat.html?dealer=${encodeURIComponent(ord.dealerName)}" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold text-xs uppercase rounded-xl text-center border border-slate-700 transition-colors">Chat with Dealer (WhatsApp Style)</a>
+      `;
+
+      if (ord.status === 'Approved') {
+        actions += `<button onclick="openPaytmModal()" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs uppercase rounded-xl transition-all shadow-lg cursor-pointer">Pay Now via Paytm</button>`;
+      }
+
+      actions += `<button onclick="cancelOrder('${ord.id}')" class="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs uppercase rounded-xl border border-rose-500/30 transition-colors cursor-pointer">Cancel Order</button>`;
+
+      document.getElementById('modalActionButtons').innerHTML = actions;
+      document.getElementById('orderModal').classList.remove('hidden');
+      document.getElementById('orderModal').classList.add('flex');
+    }
+
+    window.closeOrderModal = function() {
+      document.getElementById('orderModal').classList.remove('flex');
+      document.getElementById('orderModal').classList.add('hidden');
+    }
+
+    window.cancelOrder = async function(docId) {
+      if (confirm("Are you sure you want to cancel this order?")) {
+        await deleteDoc(doc(db, "orders", docId));
+        alert("Order cancelled.");
+        closeOrderModal();
+        loadMyOrders();
+      }
+    }
+
+    window.openPaytmModal = function() {
+      closeOrderModal();
+      document.getElementById('paytmAmount').textContent = `₹${Number(activeOrderToPay.totalPrice).toLocaleString('en-IN')}`;
+      document.getElementById('paytmModal').classList.remove('hidden');
+      document.getElementById('paytmModal').classList.add('flex');
+    }
+
+    window.closePaytmModal = function() {
+      document.getElementById('paytmModal').classList.remove('flex');
+      document.getElementById('paytmModal').classList.add('hidden');
+    }
+
+    window.executePaytmPayment = async function() {
+      closePaytmModal();
+      const overlay = document.getElementById('celebrationOverlay');
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+
+      try {
+        await setDoc(doc(db, "orders", activeOrderToPay.id), { ...activeOrderToPay, status: "Paid" }, { merge: true });
+        setTimeout(async () => {
+          overlay.classList.remove('flex');
+          overlay.classList.add('hidden');
+          alert("Payment verified successfully! Recorded in your Total Transactions ledger.");
+          await loadMyOrders();
+        }, 2500);
+      } catch (err) {
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+        alert("Payment error: " + err.message);
+      }
+    }
+
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = '../03-auth/login.html';
+    });
+  </script>
+</body>
+</html>

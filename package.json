@@ -4,7 +4,8 @@
   "description": "B2B Marketplace for Non-Hazardous Industrial Waste",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "start:user2": "electron . --user-data-2"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

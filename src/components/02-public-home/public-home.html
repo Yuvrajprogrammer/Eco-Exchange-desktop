@@ -13,13 +13,11 @@
 
   <!-- Top Taskbar / Navigation -->
   <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90">
-    <!-- Left: Brand Logo & Title -->
     <div class="flex items-center space-x-3">
       <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
       <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
     </div>
 
-    <!-- Right: Login & Sign-Up Buttons -->
     <div class="no-drag flex items-center space-x-3">
       <a href="../03-auth/login.html" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-slate-900 transition-all border border-slate-800">
         Login
@@ -33,30 +31,28 @@
   <!-- Main Content Area -->
   <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-950/40 to-slate-950">
     
-    <!-- Page Header & Filter Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>
         <h1 class="text-2xl font-black tracking-tight text-white uppercase">Industrial Symbiosis Public Feed</h1>
         <p class="text-xs text-slate-400 mt-1">Live verified non-hazardous industrial waste listings across the Delhi-NCR corridor.</p>
       </div>
 
-      <!-- Table Filter Search Input -->
       <div class="relative w-full md:w-72">
         <input 
           type="text" 
           id="tableFilter" 
           onkeyup="filterTable()" 
-          placeholder="Filter by dealer, product, or location..." 
-          class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-        />
+          placeholder="Filter by ID, dealer, product..." 
+          class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
       </div>
     </div>
 
-    <!-- 5-Column Public Marketplace Table Container -->
+    <!-- Public Marketplace Table Container -->
     <div class="bg-slate-900/30 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
       <table class="w-full text-left border-collapse" id="marketplaceTable">
         <thead>
           <tr class="bg-slate-950/80 border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <th class="p-4">Request ID</th>
             <th class="p-4">Dealer Name</th>
             <th class="p-4">Product to be Sold</th>
             <th class="p-4">Quantity (Tons)</th>
@@ -65,17 +61,15 @@
           </tr>
         </thead>
         <tbody id="listingsTableBody" class="divide-y divide-slate-800/60 text-xs text-slate-300">
-          <!-- Dynamically populated from Firestore. Shows empty state if no listings exist. -->
           <tr>
-            <td colspan="5" class="p-8 text-center text-slate-500 italic">
-              Connecting to secure database... No active listings found yet.
+            <td colspan="6" class="p-8 text-center text-slate-500 italic">
+              Connecting to secure database... Loading live listings...
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Notice Banner for Guests -->
     <div class="mt-6 p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <span class="text-emerald-400 text-lg">💡</span>
@@ -87,87 +81,85 @@
         Register Entity Now →
       </a>
     </div>
-
   </main>
 
-  <!-- Bottom Footer Status -->
   <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500">
     <div>EcoExchange Public Registry • Delhi-NCR Corridor</div>
     <div>Secure B2B Prototype v1.0</div>
   </div>
 
-  <!-- Table Filter Script & Firebase Live Sync -->
+  <!-- Firebase Live Sync Script -->
   <script type="module">
     import { db } from '../../firebase-config.js';
-    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-firestore.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let liveListings = [];
 
     async function loadRealListings() {
       const tbody = document.getElementById("listingsTableBody");
       try {
-        const q = query(collection(db, "waste_listings"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        // Fetching directly from sell_requests without strict orderBy to avoid missing-index errors
+        const querySnapshot = await getDocs(collection(db, "sell_requests"));
 
-        if (querySnapshot.empty) {
+        liveListings = [];
+        querySnapshot.forEach((docSnap) => {
+          liveListings.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        // Sort manually by createdAt if available
+        liveListings.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        if (liveListings.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="5" class="p-8 text-center text-slate-500 italic">
-                No real industrial listings posted yet. Be the first entity to list waste via the Sell portal!
+              <td colspan="6" class="p-8 text-center text-slate-500 italic">
+                No active industrial listings found in the database.
               </td>
             </tr>
           `;
           return;
         }
 
-        tbody.innerHTML = "";
-        querySnapshot.forEach((doc) => {
-          const item = doc.data();
-          const tr = document.createElement("tr");
-          tr.className = "hover:bg-slate-900/50 transition-colors";
-          tr.innerHTML = `
-            <td class="p-4 font-bold text-white">${item.dealerName || 'Verified Enterprise'}</td>
-            <td class="p-4 text-emerald-400 font-medium">${item.productType}</td>
-            <td class="p-4">${item.amountTons}</td>
-            <td class="p-4">₹${Number(item.pricePerTon || 0).toLocaleString('en-IN')}</td>
-            <td class="p-4 text-slate-400">${item.address}</td>
-          `;
-          tbody.appendChild(tr);
-        });
+        renderTable(liveListings);
       } catch (error) {
         console.error("Error loading listings from Firebase:", error);
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="p-8 text-center text-red-400/80 italic">
-              Database connection pending. Ensure firebase-config.js is configured with your project credentials.
+            <td colspan="6" class="p-8 text-center text-red-400/80 italic">
+              Database error: ${error.message}
             </td>
           </tr>
         `;
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadRealListings);
-  </script>
+    function renderTable(items) {
+      const tbody = document.getElementById("listingsTableBody");
+      tbody.innerHTML = items.map(item => `
+        <tr class="hover:bg-slate-900/50 transition-colors">
+          <td class="p-4 font-mono text-emerald-400 font-bold">${item.requestId || item.id}</td>
+          <td class="p-4 font-bold text-white">${item.dealerName || 'Verified Enterprise'}</td>
+          <td class="p-4 text-emerald-400 font-medium">${item.productType}</td>
+          <td class="p-4">${item.amountInTons}</td>
+          <td class="p-4 font-mono">₹${Number(item.pricePerTon || 0).toLocaleString('en-IN')}</td>
+          <td class="p-4 text-slate-400">${item.address}</td>
+        </tr>
+      `).join('');
+    }
 
-  <script>
-    function filterTable() {
+    window.filterTable = function() {
       const input = document.getElementById("tableFilter");
       const filter = input.value.toLowerCase();
-      const table = document.getElementById("marketplaceTable");
-      const tr = table.getElementsByTagName("tr");
-
-      for (let i = 1; i < tr.length; i++) {
-        let visible = false;
-        const td = tr[i].getElementsByTagName("td");
-        for (let j = 0; j < td.length; j++) {
-          if (td[j]) {
-            if (td[j].innerHTML.toLowerCase().indexOf(filter) > -1) {
-              visible = true;
-              break;
-            }
-          }
-        }
-        tr[i].style.display = visible ? "" : "none";
-      }
+      const filtered = liveListings.filter(item => 
+        (item.requestId && item.requestId.toLowerCase().includes(filter)) ||
+        (item.dealerName && item.dealerName.toLowerCase().includes(filter)) ||
+        (item.productType && item.productType.toLowerCase().includes(filter)) ||
+        (item.address && item.address.toLowerCase().includes(filter))
+      );
+      renderTable(filtered);
     }
+
+    window.addEventListener('DOMContentLoaded', loadRealListings);
   </script>
 </body>
 </html>
