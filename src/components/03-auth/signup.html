@@ -3,9 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebase.com https://*.cloudfunctions.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://*.gstatic.com https://*.googleapis.com; connect-src *;">
-  <title>EcoExchange - Enterprise Onboarding & Registration</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>EcoExchange</title>
+
+  <!-- 1. Theme Persistence (Must be at the very top of <head>) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      // Default to light mode if not explicitly set to 'dark'
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- 2. Local CSS Output -->
+  <link rel="stylesheet" href="../../styles/output.css">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center px-4">
 

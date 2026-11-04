@@ -1,15 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EcoExchange - Raised Requests & Buyer Inquiries</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../../styles/main.css">
-</head>
-<body class="bg-[#020617] text-slate-100 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoExchange</title>
 
+  <!-- 1. Theme Persistence (Must be at the very top of <head>) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      // Default to light mode if not explicitly set to 'dark'
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- 2. Local CSS Output -->
+  <link rel="stylesheet" href="../../styles/output.css">
+</head>
+<body class="h-full bg-slate-100/70 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen">
   <!-- Top Taskbar -->
   <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90 z-40">
     <div class="flex items-center space-x-3">
@@ -30,7 +42,7 @@
   <!-- App Body -->
   <div class="flex flex-1 relative overflow-hidden">
     
-    <!-- Sidebar -->
+    <!-- Left Sidebar Drawer -->
     <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-30 absolute inset-y-0 left-0 -translate-x-full shadow-2xl">
       <div class="p-4 space-y-2">
         <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 pb-2">Task Bar Menu</div>
@@ -50,12 +62,11 @@
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-2xl font-black tracking-tight text-white uppercase">Your Raised Sell Requests & Inquiries</h1>
-            <p class="text-xs text-slate-400 mt-1">Manage your active waste listings, review buyer purchase requests, and click 'OK' to dispatch orders.</p>
+            <p class="text-xs text-slate-400 mt-1">Review buyer purchase requests. Click 'OK / Approve' to send the order back to the buyer for payment.</p>
           </div>
           <a href="hub.html" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold uppercase transition-all">← Back to Hub</a>
         </div>
 
-        <!-- Raised Requests List container -->
         <div id="raisedRequestsContainer" class="space-y-6">
           <div class="p-8 text-center text-slate-500 italic bg-slate-900/30 border border-slate-800/80 rounded-2xl">
             Loading your raised requests and buyer inquiries...
@@ -71,10 +82,9 @@
     <div>Secure B2B Prototype v1.0</div>
   </div>
 
-  <!-- Script -->
   <script type="module">
     import { db, auth } from '../../firebase-config.js';
-    import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, onSnapshot, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     let currentUser = null;
@@ -97,116 +107,135 @@
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        const userDoc = await getDoc(doc(db, "enterprises", user.uid));
-        currentEntityName = userDoc.exists() ? userDoc.data().entityName : user.email;
+        try {
+          const userDoc = await getDoc(doc(db, "enterprises", user.uid));
+          currentEntityName = userDoc.exists() ? (userDoc.data().entityName || user.email) : user.email;
+        } catch (err) {
+          currentEntityName = user.email;
+        }
         document.getElementById('entityNameDisplay').textContent = currentEntityName;
-        loadRaisedRequests();
+        loadRaisedRequestsRealtime();
       } else {
         window.location.href = '../03-auth/login.html';
       }
     });
 
-    async function loadRaisedRequests() {
+    function loadRaisedRequestsRealtime() {
       const container = document.getElementById('raisedRequestsContainer');
-      try {
-        const snap = await getDocs(collection(db, "sell_requests"));
+
+      onSnapshot(collection(db, "sell_requests"), (sellSnap) => {
         let myRequests = [];
-        snap.forEach(d => {
+        sellSnap.forEach(d => {
           const data = d.data();
-          if (data.dealerUid === currentUser.uid) {
+          if (data.dealerUid === currentUser.uid || data.dealerName === currentEntityName) {
             myRequests.push({ id: d.id, ...data });
           }
         });
 
-        if (myRequests.length === 0) {
-          container.innerHTML = `<div class="p-8 text-center text-slate-500 italic bg-slate-900/30 border border-slate-800/80 rounded-2xl">You have not raised any sell requests yet. Use the Sell portal to post items!</div>`;
-          return;
-        }
+        onSnapshot(collection(db, "orders"), (ordersSnap) => {
+          let allOrders = [];
+          ordersSnap.forEach(o => {
+            allOrders.push({ id: o.id, ...o.data() });
+          });
 
-        // Also fetch inquiries/orders placed against these requests
-        const ordersSnap = await getDocs(collection(db, "orders"));
-        let ordersMap = {};
-        ordersSnap.forEach(o => {
-          const oData = o.data();
-          if (!ordersMap[oData.requestId]) ordersMap[oData.requestId] = [];
-          ordersMap[oData.requestId].push({ id: o.id, ...oData });
-        });
-
-        container.innerHTML = myRequests.map(req => {
-          const inquiries = ordersMap[req.requestId || req.id] || [];
-          return `
-            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-                <div>
-                  <span class="text-xs font-mono text-emerald-400 font-bold">${req.requestId || req.id}</span>
-                  <h3 class="text-lg font-black text-white uppercase mt-0.5">${req.productType}</h3>
-                  <p class="text-xs text-slate-400">Quantity: <strong class="text-slate-200">${req.amountInTons} Tons</strong> | Price: <strong class="text-slate-200">₹${Number(req.pricePerTon).toLocaleString('en-IN')}/ton</strong> | Address: ${req.address}</p>
-                </div>
-                <button onclick="cancelRaiseRequest('${req.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
-                  Cancel Listing
-                </button>
+          if (myRequests.length === 0) {
+            container.innerHTML = `
+              <div class="p-8 text-center text-slate-500 italic bg-slate-900/30 border border-slate-800/80 rounded-2xl">
+                You have not raised any sell requests yet. Use the Sell portal to post items!
               </div>
+            `;
+            return;
+          }
 
-              <!-- Inquiries Table -->
-              <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Buyer Inquiries & Purchase Requests (${inquiries.length})</h4>
-                ${inquiries.length === 0 ? `<p class="text-xs text-slate-500 italic">No buyer has inquired or requested this item yet.</p>` : `
-                  <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden">
-                    <table class="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                          <th class="p-3">Buyer Entity</th>
-                          <th class="p-3">Required Quantity</th>
-                          <th class="p-3">Total Investment</th>
-                          <th class="p-3">Status</th>
-                          <th class="p-3 text-center">Action / OK</th>
-                          <th class="p-3 text-center">Chat</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-slate-800/60 text-slate-300">
-                        ${inquiries.map(inq => `
-                          <tr>
-                            <td class="p-3 font-bold text-white">${inq.buyerEntityName || inq.buyerEmail}</td>
-                            <td class="p-3">${inq.tons} Tons</td>
-                            <td class="p-3 font-mono text-emerald-400">₹${Number(inq.totalPrice).toLocaleString('en-IN')}</td>
-                            <td class="p-3"><span class="px-2 py-1 rounded-lg text-[10px] font-bold ${inq.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${inq.status}</span></td>
-                            <td class="p-3 text-center">
-                              ${inq.status === 'Pending Approval' ? `
-                                <button onclick="approveOrder('${inq.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[10px] uppercase rounded-lg cursor-pointer shadow-md">OK / Approve</button>
-                              ` : `<span class="text-slate-500 text-[10px]">Approved</span>`}
-                            </td>
-                            <td class="p-3 text-center">
-                              <a href="../07-chat/chat.html?dealer=${encodeURIComponent(inq.buyerEmail)}" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold text-[10px] uppercase rounded-lg border border-slate-700 transition-colors">Chat</a>
-                            </td>
-                          </tr>
-                        `).join('')}
-                      </tbody>
-                    </table>
+          container.innerHTML = myRequests.map(req => {
+            const reqId = req.requestId || req.id;
+            const inquiries = allOrders.filter(o => o.requestId === reqId || o.requestId === req.id);
+            const isListingSold = req.isSold || req.status === "Paid";
+
+            return `
+              <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs font-mono text-emerald-400 font-bold">${reqId}</span>
+                      ${isListingSold ? '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase">Sold / Completed</span>' : '<span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase">Active Listing</span>'}
+                    </div>
+                    <h3 class="text-lg font-black text-white uppercase mt-0.5">${req.productType}</h3>
+                    <p class="text-xs text-slate-400">Quantity: <strong class="text-slate-200">${req.amountInTons} Tons</strong> | Price: <strong class="text-slate-200">₹${Number(req.pricePerTon || 0).toLocaleString('en-IN')}/ton</strong> | Address: ${req.address}</p>
                   </div>
-                `}
-              </div>
-            </div>
-          `;
-        }).join('');
+                  ${!isListingSold ? `
+                    <button onclick="cancelRaiseRequest('${req.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
+                      Cancel Listing
+                    </button>
+                  ` : ''}
+                </div>
 
-      } catch (err) {
+                <div>
+                  <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Buyer Inquiries & Purchase Requests (${inquiries.length})</h4>
+                  ${inquiries.length === 0 ? `<p class="text-xs text-slate-500 italic">No buyer has requested to buy this item yet.</p>` : `
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden">
+                      <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th class="p-3">Buyer Entity</th>
+                            <th class="p-3">Requested Quantity</th>
+                            <th class="p-3">Total Investment</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-center">Seller Action</th>
+                            <th class="p-3 text-center">Dealer Chat</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                          ${inquiries.map(inq => {
+                            // Link directly to the buyer entity name (e.g., samsung) rather than their email ID
+                            const targetChatUser = inq.buyerEntityName || inq.buyerEmail;
+                            return `
+                              <tr>
+                                <td class="p-3 font-bold text-white">${inq.buyerEntityName || inq.buyerEmail}</td>
+                                <td class="p-3">${inq.tons} Tons</td>
+                                <td class="p-3 font-mono text-emerald-400">₹${Number(inq.totalPrice || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-3">
+                                  <span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase ${inq.status === 'Paid' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : inq.status === 'Approved' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+                                    ${inq.status === 'Approved' ? 'Approved (Waiting Payment)' : (inq.status || 'Pending Approval')}
+                                  </span>
+                                </td>
+                                <td class="p-3 text-center">
+                                  ${(!inq.status || inq.status === 'Pending Approval' || inq.status === 'Active') ? `
+                                    <button onclick="approveOrder('${inq.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[10px] uppercase rounded-lg cursor-pointer shadow-lg shadow-emerald-950/50 transition-all">OK / Approve</button>
+                                  ` : `<span class="text-emerald-400 text-[10px] font-bold">${inq.status === 'Paid' ? 'Completed' : 'Approved'}</span>`}
+                                </td>
+                                <td class="p-3 text-center">
+                                  <a href="../07-chat/chat.html?dealer=${encodeURIComponent(targetChatUser)}" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold text-[10px] uppercase rounded-lg border border-slate-700 transition-colors inline-block">Chat</a>
+                                </td>
+                              </tr>
+                            `;
+                          }).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('');
+        });
+      }, (err) => {
         console.error("Error loading raised requests:", err);
-      }
+        container.innerHTML = `<div class="p-8 text-center text-rose-400 italic">Error loading requests: ${err.message}</div>`;
+      });
     }
 
     window.cancelRaiseRequest = async function(docId) {
       if (confirm("Are you sure you want to cancel this raised sell request?")) {
         await deleteDoc(doc(db, "sell_requests", docId));
         alert("Listing cancelled successfully.");
-        loadRaisedRequests();
       }
     }
 
     window.approveOrder = async function(orderId) {
       try {
         await updateDoc(doc(db, "orders", orderId), { status: "Approved" });
-        alert("Order approved and dispatched back to buyer's orders list for payment!");
-        loadRaisedRequests();
+        alert("Order approved successfully! Dispatched back to the buyer's orders list for payment.");
       } catch (err) {
         alert("Error approving order: " + err.message);
       }

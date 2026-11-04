@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoExchange</title>
+
+  <!-- 1. Theme Persistence (Must be at the very top of <head>) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      // Default to light mode if not explicitly set to 'dark'
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- 2. Local CSS Output -->
+  <link rel="stylesheet" href="../../styles/output.css">
+</head>
+<body class="h-screen w-screen flex flex-col bg-slate-900 text-slate-100 overflow-hidden">  <!-- Top Taskbar -->
+  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90 z-40">
+    <div class="flex items-center space-x-3">
+      <button id="sidebarToggle" class="no-drag text-slate-400 hover:text-emerald-400 focus:outline-none transition-colors p-1 rounded-lg hover:bg-slate-900 cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
+      <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
+    </div>
+    <div class="no-drag flex items-center space-x-4">
+      <div class="text-xs text-slate-300 hidden md:block">
+        <span class="text-slate-500">Entity:</span> <strong id="entityNameDisplay" class="text-emerald-400">Loading...</strong>
+      </div>
+      <button id="signOutBtn" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 border border-slate-800 transition-all cursor-pointer">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- App Body -->
+  <div class="flex flex-1 relative overflow-hidden">
+    
+    <!-- Left Sidebar Drawer -->
+    <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-30 absolute inset-y-0 left-0 -translate-x-full shadow-2xl">
+      <div class="p-4 space-y-2">
+        <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 pb-2">Task Bar Menu</div>
+        <a href="../04-buy/buy-feed.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Buy Feed</a>
+        <a href="../05-sell/sell-request.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Sell Option</a>
+        <a href="../06-update-hub/hub.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Update Option</a>
+        <a href="chat.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold tracking-wide">Dealer Chat</a>
+        <a href="../08-settings/settings.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Settings</a>
+      </div>
+      <div class="p-4 border-t border-slate-800/80 text-[10px] text-slate-500 text-center uppercase">EcoExchange v1.0.0</div>
+    </aside>
+
+    <!-- Main Chat Workspace -->
+    <main class="flex-1 flex overflow-hidden bg-gradient-to-b from-slate-950/40 to-slate-950 w-full">
+      
+      <!-- Left Sidebar: Conversations List -->
+      <div class="w-80 bg-slate-950/80 border-r border-slate-800/80 flex flex-col">
+        <div class="p-4 border-b border-slate-800/80 space-y-3">
+          <h2 class="text-sm font-black text-white uppercase tracking-wider">Conversations</h2>
+          <input type="text" id="chatSearch" onkeyup="filterConversations()" placeholder="Search conversations..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" />
+        </div>
+        <div id="conversationsList" class="flex-1 overflow-y-auto divide-y divide-slate-900">
+          <div class="p-4 text-center text-slate-500 italic text-xs">Loading conversations...</div>
+        </div>
+      </div>
+
+      <!-- Right Window: Active Chat Thread -->
+      <div class="flex-1 flex flex-col bg-slate-900/20">
+        <!-- Chat Header -->
+        <div class="h-16 border-b border-slate-800/80 bg-slate-950/60 px-6 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-black text-emerald-400 text-sm" id="activeAvatar">
+              --
+            </div>
+            <div>
+              <h3 id="activeDealerName" class="text-sm font-black text-white uppercase">Select a Conversation</h3>
+              <p id="activeDealerStatus" class="text-[10px] text-slate-400">Secure Industrial Symbiosis Channel</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button id="clearChatBtn" onclick="clearCurrentChat()" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold uppercase transition-all hidden cursor-pointer">
+              Clear Chat
+            </button>
+            <div class="text-xs text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">Encrypted B2B</div>
+          </div>
+        </div>
+
+        <!-- Messages Scroll Container -->
+        <div id="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4">
+          <div class="h-full flex flex-col items-center justify-center text-slate-500 italic text-xs space-y-2">
+            <div class="text-3xl">💬</div>
+            <p>Select a conversation from the left or open chat from your orders and requests.</p>
+          </div>
+        </div>
+
+        <!-- Message Input Bar -->
+        <div class="p-4 border-t border-slate-800/80 bg-slate-950/80">
+          <form id="chatForm" onsubmit="sendMessage(event)" class="flex space-x-3">
+            <input type="text" id="messageInput" placeholder="Type an encrypted industrial message..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" disabled />
+            <button type="submit" id="sendBtn" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg cursor-not-allowed opacity-50" disabled>
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500 z-40">
+    <div>EcoExchange Dealer Chat Module</div>
+    <div>Secure B2B Prototype v1.0</div>
+  </div>
+
+  <script type="module">
+    import { db, auth } from '../../firebase-config.js';
+    import { collection, onSnapshot, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    let currentUser = null;
+    let currentEntityName = "";
+    let activeDealer = null;
+    let unsubscribeMessages = null;
+    let allConversationsList = [];
+    let clearedTimestamps = {}; // Tracks clear chat per room locally/in user profile
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('-translate-x-full');
+      });
+      document.addEventListener('click', (e) => {
+        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+          sidebar.classList.add('-translate-x-full');
+        }
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        try {
+          const userDoc = await getDoc(doc(db, "enterprises", user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            currentEntityName = data.entityName || user.email;
+            clearedTimestamps = data.clearedChats || {};
+          } else {
+            currentEntityName = user.email;
+          }
+        } catch (err) {
+          currentEntityName = user.email;
+        }
+        document.getElementById('entityNameDisplay').textContent = currentEntityName;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const dealerParam = urlParams.get('dealer');
+
+        loadStrictConversations(dealerParam);
+      } else {
+        window.location.href = '../03-auth/login.html';
+      }
+    });
+
+    // Load ONLY conversations strictly tied to actual orders, direct sell inquiries, or existing chat rooms
+    function loadStrictConversations(preselectedDealer) {
+      onSnapshot(collection(db, "sell_requests"), (sellSnap) => {
+        onSnapshot(collection(db, "orders"), async (orderSnap) => {
+          onSnapshot(collection(db, "chats"), async (chatsSnap) => {
+            const dealersSet = new Set();
+            const currentLower = currentEntityName.toLowerCase();
+
+            if (preselectedDealer && preselectedDealer.toLowerCase() !== currentLower) {
+              dealersSet.add(preselectedDealer);
+            }
+
+            // 1. Check orders where current user is buyer or seller
+            orderSnap.forEach(o => {
+              const dat = o.data();
+              const buyerName = (dat.buyerEntityName || "").toLowerCase();
+              const dealerName = (dat.dealerName || "").toLowerCase();
+
+              if (buyerName === currentLower && dealerName && dealerName !== currentLower) {
+                dealersSet.add(dat.dealerName);
+              }
+              if (dealerName === currentLower && buyerName && buyerName !== currentLower) {
+                dealersSet.add(dat.buyerEntityName);
+              }
+            });
+
+            // 2. Check existing chat rooms where messages have been exchanged
+            for (const roomDoc of chatsSnap.docs) {
+              const roomId = roomDoc.id;
+              const parts = roomId.split("_vs_");
+              if (parts.length === 2) {
+                if (parts[0] === currentLower || parts[1] === currentLower) {
+                  const msgsSnap = await getDocs(collection(db, "chats", roomId, "messages"));
+                  if (!msgsSnap.empty) {
+                    const otherParty = parts[0] === currentLower ? parts[1] : parts[0];
+                    dealersSet.add(otherParty);
+                  }
+                }
+              }
+            }
+
+            allConversationsList = Array.from(dealersSet);
+            renderConversationsList(allConversationsList);
+
+            if (preselectedDealer) {
+              selectChat(preselectedDealer);
+            }
+          });
+        });
+      });
+    }
+
+    function renderConversationsList(dealers) {
+      const listContainer = document.getElementById('conversationsList');
+
+      if (dealers.length === 0) {
+        listContainer.innerHTML = `<div class="p-4 text-center text-slate-500 italic text-xs">No conversations found. Initiate chat from your orders or requests.</div>`;
+        return;
+      }
+
+      listContainer.innerHTML = dealers.map(dealer => `
+        <div onclick="selectChat('${dealer}')" class="p-4 hover:bg-slate-900/60 transition-colors cursor-pointer flex items-center space-x-3 ${activeDealer && activeDealer.toLowerCase() === dealer.toLowerCase() ? 'bg-slate-900 border-l-2 border-emerald-500' : ''}">
+          <div class="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-black text-emerald-400 text-xs">
+            ${dealer.substring(0, 2).toUpperCase()}
+          </div>
+          <div class="overflow-hidden">
+            <h4 class="text-xs font-bold text-white uppercase truncate">${dealer}</h4>
+            <p class="text-[10px] text-slate-400 truncate">Industrial Symbiosis Thread</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.filterConversations = function() {
+      const query = document.getElementById('chatSearch').value.toLowerCase();
+      const filtered = allConversationsList.filter(d => d.toLowerCase().includes(query));
+      renderConversationsList(filtered);
+    }
+
+    window.selectChat = function(dealerName) {
+      activeDealer = dealerName;
+      document.getElementById('activeDealerName').textContent = dealerName;
+      document.getElementById('activeAvatar').textContent = dealerName.substring(0, 2).toUpperCase();
+      document.getElementById('activeDealerStatus').textContent = "Connected via Delhi-NCR Escrow";
+      
+      const input = document.getElementById('messageInput');
+      const btn = document.getElementById('sendBtn');
+      const clearBtn = document.getElementById('clearChatBtn');
+
+      input.disabled = false;
+      btn.disabled = false;
+      btn.classList.remove('cursor-not-allowed', 'opacity-50');
+      clearBtn.classList.remove('hidden');
+
+      loadMessages(dealerName);
+      renderConversationsList(allConversationsList);
+    }
+
+    function getRoomId(dealerName) {
+      const participants = [currentEntityName.toLowerCase(), dealerName.toLowerCase()].sort();
+      return participants.join("_vs_");
+    }
+
+    function loadMessages(dealerName) {
+      const container = document.getElementById('messagesContainer');
+      const roomId = getRoomId(dealerName);
+      const userClearTime = clearedTimestamps[roomId] || 0;
+
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      const q = query(collection(db, "chats", roomId, "messages"), orderBy("timestamp", "asc"));
+      
+      unsubscribeMessages = onSnapshot(q, (snapshot) => {
+        // Filter messages locally based on individual clear timestamp
+        const visibleMessages = [];
+        snapshot.forEach(docSnap => {
+          const msg = docSnap.data();
+          if (msg.timestamp) {
+            const msgTime = msg.timestamp.toMillis ? msg.timestamp.toMillis() : new Date(msg.timestamp).getTime();
+            if (msgTime > userClearTime) {
+              visibleMessages.push(msg);
+            }
+          } else {
+            visibleMessages.push(msg); // fallback for newly sent messages pending server timestamp
+          }
+        });
+
+        if (visibleMessages.length === 0) {
+          container.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-slate-500 italic text-xs space-y-2">
+              <div class="text-3xl">🔒</div>
+              <p>Secure channel initialized with ${dealerName}. Send your first message below.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = visibleMessages.map(msg => {
+          const isMe = msg.sender && msg.sender.toLowerCase() === currentEntityName.toLowerCase();
+          return `
+            <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+              <div class="max-w-md rounded-2xl px-4 py-3 text-xs ${isMe ? 'bg-emerald-600 text-slate-950 font-medium rounded-br-none shadow-lg' : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-none'}">
+                <p>${msg.text}</p>
+              </div>
+              <span class="text-[9px] text-slate-500 mt-1 px-1">${msg.sender}</span>
+            </div>
+          `;
+        }).join('');
+
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    window.sendMessage = async function(e) {
+      e.preventDefault();
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text || !activeDealer) return;
+
+      const roomId = getRoomId(activeDealer);
+
+      try {
+        await addDoc(collection(db, "chats", roomId, "messages"), {
+          text: text,
+          sender: currentEntityName,
+          timestamp: serverTimestamp()
+        });
+        input.value = "";
+      } catch (err) {
+        alert("Error sending message: " + err.message);
+      }
+    }
+
+    // Clear chat locally for ONLY the current user without affecting the other party
+    window.clearCurrentChat = async function() {
+      if (!activeDealer) return;
+      if (confirm(`Are you sure you want to clear your chat history with ${activeDealer}? (This will only clear for you).`)) {
+        const roomId = getRoomId(activeDealer);
+        const now = Date.now();
+        clearedTimestamps[roomId] = now;
+
+        try {
+          await updateDoc(doc(db, "enterprises", currentUser.uid), {
+            clearedChats: clearedTimestamps
+          });
+          loadMessages(activeDealer);
+          alert("Chat cleared successfully for your account.");
+        } catch (err) {
+          alert("Error clearing chat: " + err.message);
+        }
+      }
+    }
+
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = '../03-auth/login.html';
+    });
+  </script>
+</body>
+</html>

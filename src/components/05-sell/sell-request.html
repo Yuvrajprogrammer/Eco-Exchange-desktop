@@ -1,17 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EcoExchange - Sell Secondary Output</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="../../styles/main.css">
-</head>
-<body class="bg-[#020617] text-slate-100 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoExchange</title>
 
-  <!-- Top Taskbar / Navigation -->
+  <!-- 1. Theme Persistence (Must be at the very top of <head>) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      // Default to light mode if not explicitly set to 'dark'
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- 2. Local CSS Output -->
+  <link rel="stylesheet" href="../../styles/output.css">
+</head>
+<body class="h-screen w-screen flex flex-col bg-slate-900 text-slate-100 overflow-hidden">  <!-- Top Taskbar -->
   <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90 z-40">
     <div class="flex items-center space-x-3">
       <button id="sidebarToggle" class="no-drag text-slate-400 hover:text-emerald-400 focus:outline-none transition-colors p-1 rounded-lg hover:bg-slate-900 cursor-pointer">
@@ -20,107 +30,104 @@
       <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
       <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
     </div>
-
     <div class="no-drag flex items-center space-x-4">
-      <div id="userInfo" class="text-xs text-slate-300 hidden md:block">
+      <div class="text-xs text-slate-300 hidden md:block">
         <span class="text-slate-500">Entity:</span> <strong id="entityNameDisplay" class="text-emerald-400">Loading...</strong>
       </div>
-      <button id="signOutBtn" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 border border-slate-800 transition-all cursor-pointer">
-        Sign Out
-      </button>
+      <button id="signOutBtn" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 border border-slate-800 transition-all cursor-pointer">Sign Out</button>
     </div>
   </div>
 
   <!-- App Body -->
   <div class="flex flex-1 relative overflow-hidden">
     
-    <!-- Left Sidebar Task Bar Drawer -->
-    <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-30 absolute inset-y-0 left-0 -translate-x-full md:translate-x-0">
+    <!-- Left Sidebar Drawer -->
+    <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between transition-all duration-300 z-30 absolute inset-y-0 left-0 -translate-x-full shadow-2xl">
       <div class="p-4 space-y-2">
         <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 pb-2">Task Bar Menu</div>
-        <a href="../04-buy/buy-feed.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-          <span>Buy Feed</span>
-        </a>
-        <a href="sell-request.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold tracking-wide">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span>Sell Option</span>
-        </a>
-        <a href="../06-update-hub/hub.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-          <span>Update Option</span>
-        </a>
-        <a href="../07-chat/chat.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-          <span>Dealer Chat</span>
-        </a>
-        <a href="../08-settings/settings.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <span>Settings</span>
-        </a>
+        <a href="../04-buy/buy-feed.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Buy Feed</a>
+        <a href="sell-request.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold tracking-wide">Sell Option</a>
+        <a href="../06-update-hub/hub.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Update Option</a>
+        <a href="../07-chat/chat.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Dealer Chat</a>
+        <a href="../08-settings/settings.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-900 hover:text-emerald-400 text-xs font-bold tracking-wide transition-colors">Settings</a>
       </div>
-      <div class="p-4 border-t border-slate-800/80">
-        <div class="text-[10px] text-slate-500 text-center uppercase tracking-wider">EcoExchange v1.0.0</div>
-      </div>
+      <div class="p-4 border-t border-slate-800/80 text-[10px] text-slate-500 text-center uppercase">EcoExchange v1.0.0</div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-950/40 to-slate-950 md:ml-64 flex items-center justify-center">
-      <div class="max-w-xl w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 shadow-2xl relative backdrop-blur-md">
+    <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-950/40 to-slate-950 flex items-center justify-center w-full">
+      <div class="max-w-2xl w-full bg-slate-900/40 border border-slate-800/80 rounded-2xl p-8 shadow-2xl space-y-6">
         
-        <div class="mb-6 flex items-center justify-between">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
           <div>
             <h1 class="text-xl font-black tracking-tight text-white uppercase">Post Secondary Output</h1>
-            <p class="text-xs text-slate-400 mt-1">List non-hazardous output. Automatically synced to public & buy feeds.</p>
+            <p class="text-xs text-slate-400 mt-0.5">List certified non-hazardous industrial byproducts. Synced to Delhi-NCR buy feeds.</p>
           </div>
-          <!-- Unique Request ID Badge Preview -->
           <div class="text-right">
-            <span class="text-[10px] uppercase font-bold text-slate-500 block">Generated ID</span>
-            <span id="requestIdBadge" class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded-lg">Generating...</span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Generated ID</span>
+            <span id="requestIdDisplay" class="font-mono text-xs text-emerald-400 font-bold">REQ-Loading...</span>
           </div>
         </div>
 
-        <div id="statusMsg" class="hidden mb-4 p-3 rounded-xl text-xs font-medium"></div>
+        <div id="errorBanner" class="hidden p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-xl text-xs font-bold"></div>
 
         <form id="sellForm" class="space-y-4">
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Product Type / Secondary Output Name</label>
-            <input type="text" id="productType" required placeholder="e.g. Fly Ash, Copper Scrap, Clean HDPE Plastic" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Select Industrial Secondary Output Item</label>
+            <select id="productType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
+              <option value="" disabled selected>-- Choose Certified Industrial Byproduct --</option>
+              <option value="Fly Ash">Fly Ash</option>
+              <option value="Steel Scrap">Steel Scrap</option>
+              <option value="Blast Furnace Slag">Blast Furnace Slag</option>
+              <option value="Silica Fume">Silica Fume</option>
+              <option value="Red Mud (Bauxite Residue)">Red Mud (Bauxite Residue)</option>
+              <option value="Phosphogypsum">Phosphogypsum</option>
+              <option value="Foundry Sand">Foundry Sand</option>
+              <option value="Spent Pot Lining">Spent Pot Lining</option>
+              <option value="Rice Husk Ash">Rice Husk Ash</option>
+              <option value="Bagasse Ash">Bagasse Ash</option>
+              <option value="Copper Slag">Copper Slag</option>
+              <option value="Aluminum Dross">Aluminum Dross</option>
+              <option value="Waste Plastics / Polymer Scrap">Waste Plastics / Polymer Scrap</option>
+              <option value="Rubber Crumb / Tyre Scrap">Rubber Crumb / Tyre Scrap</option>
+              <option value="Paper Mill Sludge">Paper Mill Sludge</option>
+              <option value="ETP Sludge (Non-Hazardous)">ETP Sludge (Non-Hazardous)</option>
+              <option value="Construction & Demolition Aggregate">Construction & Demolition Aggregate</option>
+              <option value="Glass Cullet">Glass Cullet</option>
+              <option value="Textile Cuttings / Cotton Waste">Textile Cuttings / Cotton Waste</option>
+              <option value="Biomass Briquettes / Pellets">Biomass Briquettes / Pellets</option>
+            </select>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Amount in Tons</label>
-              <input type="number" id="amountInTons" required min="1" placeholder="e.g. 150" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+              <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Amount in Tons</label>
+              <input type="number" id="amountInTons" required min="1" placeholder="Enter tons" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
             </div>
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Price per Ton (₹)</label>
-              <input type="number" id="pricePerTon" required min="0" placeholder="e.g. 2500" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-mono">
+              <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Price per Ton (₹)</label>
+              <input type="number" id="pricePerTon" required min="1" placeholder="Enter rate" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
             </div>
           </div>
 
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Dealer Address / Facility Location</label>
-            <input type="text" id="address" required placeholder="e.g. Sector 81 Industrial Area, Noida, UP" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Dealer Address / Facility Location</label>
+            <input type="text" id="address" required placeholder="e.g. Sector 43, Noida / Okhla Phase III..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" />
           </div>
 
-          <!-- Mandatory Pledge Checkbox -->
-          <div class="flex items-start space-x-3 pt-2">
-            <input type="checkbox" id="pledgeCheck" required class="mt-0.5 h-4 w-4 rounded border-slate-800 bg-slate-950 text-emerald-500 focus:ring-emerald-500 cursor-pointer">
-            <label for="pledgeCheck" class="text-xs text-slate-300 leading-relaxed cursor-pointer">
+          <div class="flex items-center space-x-3 pt-2">
+            <input type="checkbox" id="complianceCheck" required class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-emerald-500 focus:ring-0 cursor-pointer" />
+            <label for="complianceCheck" class="text-xs text-slate-400 select-none">
               I pledge that our industrial unit generates exclusively <strong class="text-emerald-400">non-hazardous</strong> secondary outputs and complies with Delhi-NCR environmental symbiosis norms.
             </label>
           </div>
 
-          <div class="flex space-x-3 pt-4">
-            <a href="../04-buy/buy-feed.html" class="flex-1 text-center bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer">
-              Cancel
-            </a>
-            <button type="submit" id="submitBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-slate-950 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer shadow-lg shadow-emerald-950/50">
-              Raise Request
-            </button>
+          <div class="flex items-center space-x-4 pt-4">
+            <a href="../06-update-hub/hub.html" class="w-1/3 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-black text-xs uppercase tracking-widest rounded-xl text-center transition-all">Cancel</a>
+            <button type="submit" id="submitBtn" class="w-2/3 py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-950/50 cursor-pointer">Raise Request</button>
           </div>
         </form>
+
       </div>
     </main>
   </div>
@@ -130,105 +137,87 @@
     <div>Secure B2B Prototype v1.0</div>
   </div>
 
-  <!-- FIREBASE SCRIPT (Fixed with v10.8.0 imports) -->
   <script type="module">
     import { db, auth } from '../../firebase-config.js';
-    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    let currentUser = null;
-    let dealerEntityName = "";
-    const uniqueRequestId = 'REQ-' + Date.now();
-    document.getElementById('requestIdBadge').textContent = uniqueRequestId;
+    let loggedInUser = null;
+    let entityName = "";
+    const uniqueReqId = "REQ-" + Math.floor(10000000000 + Math.random() * 90000000000);
+    document.getElementById('requestIdDisplay').textContent = uniqueReqId;
 
-    // Sidebar Mobile / Desktop Toggle
     const sidebar = document.getElementById('sidebar');
-    document.getElementById('sidebarToggle').addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');
-    });
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('-translate-x-full');
+      });
+      document.addEventListener('click', (e) => {
+        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+          sidebar.classList.add('-translate-x-full');
+        }
+      });
+    }
 
-    // Auth State Observer
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        currentUser = user;
+        loggedInUser = user;
         try {
           const userDoc = await getDoc(doc(db, "enterprises", user.uid));
-          if (userDoc.exists()) {
-            dealerEntityName = userDoc.data().entityName || user.email;
-          } else {
-            dealerEntityName = user.email;
-          }
+          entityName = userDoc.exists() ? (userDoc.data().entityName || user.email) : user.email;
         } catch (err) {
-          dealerEntityName = user.email;
+          entityName = user.email;
         }
-        document.getElementById('entityNameDisplay').textContent = dealerEntityName;
+        document.getElementById('entityNameDisplay').textContent = entityName;
       } else {
         window.location.href = '../03-auth/login.html';
       }
     });
 
-    // Sign Out Handler
-    document.getElementById('signOutBtn').addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.href = '../03-auth/login.html';
-    });
-
-    // Handle Sell Request Form Submission
-    const sellForm = document.getElementById('sellForm');
-    const statusMsg = document.getElementById('statusMsg');
-    const submitBtn = document.getElementById('submitBtn');
-
-    sellForm.addEventListener('submit', async (e) => {
+    document.getElementById('sellForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      statusMsg.classList.add('hidden');
+      const errorBanner = document.getElementById('errorBanner');
+      errorBanner.classList.add('hidden');
 
-      const productType = document.getElementById('productType').value.trim();
-      const amountInTons = parseInt(document.getElementById('amountInTons').value);
-      const pricePerTon = parseFloat(document.getElementById('pricePerTon').value);
-      const address = document.getElementById('address').value.trim();
-      const pledgeAccepted = document.getElementById('pledgeCheck').checked;
-
-      if (!pledgeAccepted) {
-        statusMsg.textContent = "Error: You must accept the non-hazardous pledge before raising a request.";
-        statusMsg.className = "mb-4 p-3 rounded-xl text-xs font-medium bg-rose-500/20 border border-rose-500 text-rose-300";
-        statusMsg.classList.remove('hidden');
+      if (!loggedInUser) {
+        errorBanner.textContent = "Authentication error: User session not detected. Please log in again.";
+        errorBanner.classList.remove('hidden');
         return;
       }
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Publishing to Feed...";
+      const productType = document.getElementById('productType').value;
+      const amountInTons = Number(document.getElementById('amountInTons').value);
+      const pricePerTon = Number(document.getElementById('pricePerTon').value);
+      const address = document.getElementById('address').value.trim();
 
       try {
-        // Writes directly to `sell_requests` collection with unique requestId as document ID
-        await setDoc(doc(db, "sell_requests", uniqueRequestId), {
-          requestId: uniqueRequestId,
-          dealerUid: currentUser.uid,
-          dealerName: dealerEntityName,
+        await setDoc(doc(db, "sell_requests", uniqueReqId), {
+          requestId: uniqueReqId,
+          dealerUid: loggedInUser.uid,
+          dealerName: entityName || loggedInUser.email,
           productType: productType,
           amountInTons: amountInTons,
           pricePerTon: pricePerTon,
           address: address,
-          pledgeAccepted: true,
+          createdAt: new Date().toISOString(),
           status: "Active",
-          createdAt: new Date().toISOString()
+          isSold: false
         });
 
-        statusMsg.textContent = `Success! Request ID [${uniqueRequestId}] published. Redirecting...`;
-        statusMsg.className = "mb-4 p-3 rounded-xl text-xs font-medium bg-emerald-500/20 border border-emerald-500 text-emerald-300";
-        statusMsg.classList.remove('hidden');
-
-        setTimeout(() => {
-          window.location.href = '../04-buy/buy-feed.html';
-        }, 1200);
-
-      } catch (error) {
-        console.error("Sell request error:", error);
-        statusMsg.textContent = "Failed to list item: " + error.message;
-        statusMsg.className = "mb-4 p-3 rounded-xl text-xs font-medium bg-rose-500/20 border border-rose-500 text-rose-300";
-        statusMsg.classList.remove('hidden');
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Raise Request";
+        alert("Secondary output listed successfully!");
+        window.location.href = "../06-update-hub/hub.html";
+      } catch (err) {
+        console.error("Sell request error:", err);
+        errorBanner.textContent = "Sell request error: " + err.message;
+        errorBanner.classList.remove('hidden');
       }
+    });
+
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = '../03-auth/login.html';
     });
   </script>
 </body>
