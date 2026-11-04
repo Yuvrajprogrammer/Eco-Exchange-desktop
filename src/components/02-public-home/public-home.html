@@ -1,172 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoExchange</title>
+
+  <!-- Global Theme Persistence Script -->
   <script>
-  if (localStorage.getItem('theme') === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-  </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EcoExchange - Public Marketplace</title>
-  <!-- Tailwind CSS CDN -->
-  <link rel="stylesheet" href="../../styles/output.css">
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="../../styles/main.css">
-</head>
-<body class="bg-[#020617] text-slate-100 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
-
-  <!-- Top Taskbar / Navigation -->
-  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90">
-    <div class="flex items-center space-x-3">
-      <img src="../../../assets/icons/logo.png" alt="EcoExchange Logo" class="w-7 h-7 object-contain" />
-      <span class="text-sm font-black tracking-wider text-white uppercase">EcoExchange <span class="text-emerald-400 text-xs font-normal">Delhi-NCR</span></span>
-    </div>
-
-    <div class="no-drag flex items-center space-x-3">
-      <a href="../03-auth/login.html" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-slate-900 transition-all border border-slate-800">
-        Login
-      </a>
-      <a href="../03-auth/signup.html" class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-950/50 transition-all">
-        Sign Up
-      </a>
-    </div>
-  </div>
-
-  <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-950/40 to-slate-950">
-    
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-      <div>
-        <h1 class="text-2xl font-black tracking-tight text-white uppercase">Industrial Symbiosis Public Feed</h1>
-        <p class="text-xs text-slate-400 mt-1">Live verified non-hazardous industrial waste listings across the Delhi-NCR corridor.</p>
-      </div>
-
-      <div class="relative w-full md:w-72">
-        <input 
-          type="text" 
-          id="tableFilter" 
-          onkeyup="filterTable()" 
-          placeholder="Filter by ID, dealer, product..." 
-          class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
-      </div>
-    </div>
-
-    <!-- Public Marketplace Table Container -->
-    <div class="bg-slate-900/30 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
-      <table class="w-full text-left border-collapse" id="marketplaceTable">
-        <thead>
-          <tr class="bg-slate-950/80 border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
-            <th class="p-4">Request ID</th>
-            <th class="p-4">Dealer Name</th>
-            <th class="p-4">Product to be Sold</th>
-            <th class="p-4">Quantity (Tons)</th>
-            <th class="p-4">Price per Ton</th>
-            <th class="p-4">Dealer Address</th>
-          </tr>
-        </thead>
-        <tbody id="listingsTableBody" class="divide-y divide-slate-800/60 text-xs text-slate-300">
-          <tr>
-            <td colspan="6" class="p-8 text-center text-slate-500 italic">
-              Connecting to secure database... Loading live listings...
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mt-6 p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <span class="text-emerald-400 text-lg">💡</span>
-        <div class="text-xs text-slate-300">
-          <strong class="text-white">Viewing as Guest:</strong> Sign up or log in with your verified GSTIN to post waste and access direct B2B trading.
-        </div>
-      </div>
-      <a href="../03-auth/signup.html" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider transition-all">
-        Register Entity Now →
-      </a>
-    </div>
-  </main>
-
-  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500">
-    <div>EcoExchange Public Registry • Delhi-NCR Corridor</div>
-    <div>Secure B2B Prototype v1.0</div>
-  </div>
-
-  <!-- Firebase Live Sync Script -->
-  <script type="module">
-    import { db } from '../../firebase-config.js';
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    let liveListings = [];
-
-    async function loadRealListings() {
-      const tbody = document.getElementById("listingsTableBody");
-      try {
-        // Fetching directly from sell_requests without strict orderBy to avoid missing-index errors
-        const querySnapshot = await getDocs(collection(db, "sell_requests"));
-
-        liveListings = [];
-        querySnapshot.forEach((docSnap) => {
-          liveListings.push({ id: docSnap.id, ...docSnap.data() });
-        });
-
-        // Sort manually by createdAt if available
-        liveListings.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-        if (liveListings.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="p-8 text-center text-slate-500 italic">
-                No active industrial listings found in the database.
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        renderTable(liveListings);
-      } catch (error) {
-        console.error("Error loading listings from Firebase:", error);
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="p-8 text-center text-red-400/80 italic">
-              Database error: ${error.message}
-            </td>
-          </tr>
-        `;
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
-    }
-
-    function renderTable(items) {
-      const tbody = document.getElementById("listingsTableBody");
-      tbody.innerHTML = items.map(item => `
-        <tr class="hover:bg-slate-900/50 transition-colors">
-          <td class="p-4 font-mono text-emerald-400 font-bold">${item.requestId || item.id}</td>
-          <td class="p-4 font-bold text-white">${item.dealerName || 'Verified Enterprise'}</td>
-          <td class="p-4 text-emerald-400 font-medium">${item.productType}</td>
-          <td class="p-4">${item.amountInTons}</td>
-          <td class="p-4 font-mono">₹${Number(item.pricePerTon || 0).toLocaleString('en-IN')}</td>
-          <td class="p-4 text-slate-400">${item.address}</td>
-        </tr>
-      `).join('');
-    }
-
-    window.filterTable = function() {
-      const input = document.getElementById("tableFilter");
-      const filter = input.value.toLowerCase();
-      const filtered = liveListings.filter(item => 
-        (item.requestId && item.requestId.toLowerCase().includes(filter)) ||
-        (item.dealerName && item.dealerName.toLowerCase().includes(filter)) ||
-        (item.productType && item.productType.toLowerCase().includes(filter)) ||
-        (item.address && item.address.toLowerCase().includes(filter))
-      );
-      renderTable(filtered);
-    }
-
-    window.addEventListener('DOMContentLoaded', loadRealListings);
+    })();
   </script>
+
+  <!-- Local Compiled Tailwind CSS -->
+  <link rel="stylesheet" href="../../styles/output.css">
+</head>
+<body class="h-full w-full bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 select-none overflow-hidden">
+
+  <!-- Main Splash Container -->
+  <div class="max-w-md w-full text-center space-y-8">
+    
+    <!-- App Logo & Full Name with Bouncing Animation -->
+    <div class="flex flex-col items-center space-y-4">
+      <div class="w-20 h-20 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-extrabold text-3xl tracking-wider shadow-lg shadow-emerald-600/30 animate-bounce">
+        EX
+      </div>
+      <div class="space-y-1.5">
+        <h1 class="text-3xl font-black tracking-tight text-white">ECOEXCHANGE</h1>
+        <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Ecological and Economic Exchange</p>
+        <p class="text-[11px] text-slate-400 font-medium tracking-widest uppercase">B2B Industrial Symbiosis Platform</p>
+      </div>
+    </div>
+
+    <!-- Brief Description -->
+    <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+      Secure enterprise corridor for managing non-hazardous material outputs, direct dealer negotiations, and transaction tracking across Delhi-NCR.
+    </p>
+
+    <!-- Jumping / Animated Login & Sign-Up Action Buttons -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+      <a href="./03-auth/login.html" class="w-full sm:w-40 py-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 hover:border-slate-600 font-semibold text-xs transition-all shadow-sm animate-bounce">
+        LOGIN
+      </a>
+      <a href="./03-auth/signup.html" class="w-full sm:w-40 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-lg shadow-emerald-600/20 animate-bounce">
+        SIGN UP
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Footer Info -->
+  <footer class="absolute bottom-6 text-center text-[11px] text-slate-600">
+    Delhi-NCR Corridor • Secure B2B Prototype v1.0
+  </footer>
+
 </body>
 </html>
