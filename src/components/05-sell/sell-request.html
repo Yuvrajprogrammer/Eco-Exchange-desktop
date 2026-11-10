@@ -102,17 +102,17 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Amount in Tons</label>
-              <input type="number" id="amountInTons" required min="1" placeholder="Enter tons" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+              <input type="number" id="amountInTons" required min="1" max="500" oninput="if(this.value > 500) this.value = 500; if(this.value < 0) this.value = '';" onkeydown="if(['-', 'e', 'E', '+'].includes(event.key)) event.preventDefault();" placeholder="Enter tons" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
             </div>
             <div>
               <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Price per Ton (₹)</label>
-              <input type="number" id="pricePerTon" required min="1" placeholder="Enter rate" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+              <input type="number" id="pricePerTon" required min="200" onkeydown="if(['-', 'e', 'E', '+', '.'].includes(event.key)) event.preventDefault();" placeholder="Enter rate (Min ₹200)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
             </div>
           </div>
 
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Dealer Address / Facility Location</label>
-            <input type="text" id="address" required placeholder="e.g. Sector 43, Noida / Okhla Phase III..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" />
+            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Dealer Address / Facility Location (Min 10, Max 50 non-space characters)</label>
+            <input type="text" id="address" required placeholder="e.g. Sector 43, Noida..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500" />
           </div>
 
           <div class="flex items-center space-x-3 pt-2">
@@ -123,7 +123,7 @@
           </div>
 
           <div class="flex items-center space-x-4 pt-4">
-            <a href="../06-update-hub/hub.html" class="w-1/3 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-black text-xs uppercase tracking-widest rounded-xl text-center transition-all">Cancel</a>
+            <a href="../04-buy/buy-feed.html" class="w-1/3 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-black text-xs uppercase tracking-widest rounded-xl text-center transition-all">Cancel</a>
             <button type="submit" id="submitBtn" class="w-2/3 py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-950/50 cursor-pointer">Raise Request</button>
           </div>
         </form>
@@ -192,6 +192,21 @@
       const pricePerTon = Number(document.getElementById('pricePerTon').value);
       const address = document.getElementById('address').value.trim();
 
+      // Remove ALL spaces entirely to count only non-space characters
+      const nonSpaceCharsCount = address.replace(/\s/g, '').length;
+
+      if (pricePerTon < 200) {
+        errorBanner.textContent = "Validation Error: Price per ton must be at least ₹200.";
+        errorBanner.classList.remove('hidden');
+        return;
+      }
+
+      if (nonSpaceCharsCount < 10 || nonSpaceCharsCount > 50) {
+        errorBanner.textContent = "Validation Error: Address must contain between 10 and 50 non-space characters.";
+        errorBanner.classList.remove('hidden');
+        return;
+      }
+
       try {
         await setDoc(doc(db, "sell_requests", uniqueReqId), {
           requestId: uniqueReqId,
@@ -207,7 +222,7 @@
         });
 
         alert("Secondary output listed successfully!");
-        window.location.href = "../06-update-hub/hub.html";
+        window.location.href = "../04-buy/buy-feed.html";
       } catch (err) {
         console.error("Sell request error:", err);
         errorBanner.textContent = "Sell request error: " + err.message;

@@ -21,67 +21,70 @@
   <!-- 2. Local CSS Output -->
   <link rel="stylesheet" href="../../styles/output.css">
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center px-4">
-  <!-- Back Button -->
-    <button type="button" id="backBtn" class="inline-flex items-center text-xs text-slate-400 hover:text-emerald-400 mb-6 transition-colors cursor-pointer">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center px-4 py-8">
+
+  <div class="max-w-md w-full space-y-4">
+    <!-- Back Button -->
+    <button type="button" id="backBtn" class="inline-flex items-center text-xs text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer">
       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
       </svg>
       Back to Home
     </button>
 
-  <div class="max-w-md w-full bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700 relative">
-    
-    <div class="text-center mb-6">
-      <h1 class="text-2xl font-bold tracking-wider text-emerald-400">ECOEXCHANGE</h1>
-      <p class="text-sm text-slate-400 mt-1">Delhi-NCR B2B Industrial Symbiosis Portal</p>
-    </div>
-
-    <!-- Error/Status Message Banner -->
-    <div id="errorMsg" class="hidden mb-4 p-3 bg-rose-500/20 border border-rose-500 text-rose-300 text-sm rounded-lg"></div>
-
-    <form id="loginForm" class="space-y-4">
-      <!-- GSTIN Input -->
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">15-Digit GSTIN</label>
-        <input 
-          type="text" 
-          id="gstin" 
-          required 
-          maxlength="15" 
-          placeholder="e.g. 07AAACM2007J1ZU" 
-          class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 uppercase focus:outline-none focus:border-emerald-500 font-mono tracking-wide"
-        >
+    <div class="bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700 relative">
+      
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold tracking-wider text-emerald-400">ECOEXCHANGE</h1>
+        <p class="text-sm text-slate-400 mt-1">Delhi-NCR B2B Industrial Symbiosis Portal</p>
       </div>
 
-      <!-- Password -->
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          required 
-          placeholder="••••••••" 
-          class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+      <!-- Error/Status Message Banner -->
+      <div id="errorMsg" class="hidden mb-4 p-3 bg-rose-500/20 border border-rose-500 text-rose-300 text-sm rounded-lg"></div>
+
+      <form id="loginForm" class="space-y-4">
+        <!-- GSTIN Input -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">15-Digit GSTIN</label>
+          <input 
+            type="text" 
+            id="gstin" 
+            required 
+            maxlength="15" 
+            placeholder="e.g. 07AAACM2007J1ZU" 
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 uppercase focus:outline-none focus:border-emerald-500 font-mono tracking-wide"
+          >
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            placeholder="••••••••" 
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+          >
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          id="submitBtn"
+          class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold py-2.5 rounded-lg transition-colors shadow-lg shadow-emerald-600/20 mt-2"
         >
+          Sign In to Marketplace
+        </button>
+      </form>
+
+      <!-- Register Link -->
+      <div class="text-center mt-6">
+        <p class="text-xs text-slate-400">
+          New industrial unit? 
+          <a href="./signup.html" class="text-emerald-400 hover:underline font-semibold">Register Entity</a>
+        </p>
       </div>
-
-      <!-- Submit Button -->
-      <button 
-        type="submit" 
-        id="submitBtn"
-        class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold py-2.5 rounded-lg transition-colors shadow-lg shadow-emerald-600/20 mt-2"
-      >
-        Sign In to Marketplace
-      </button>
-    </form>
-
-    <!-- Register Link -->
-    <div class="text-center mt-6">
-      <p class="text-xs text-slate-400">
-        New industrial unit? 
-        <a href="./signup.html" class="text-emerald-400 hover:underline font-semibold">Register Entity</a>
-      </p>
     </div>
   </div>
 
@@ -106,6 +109,11 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+    // Fixed Back Button Handler Path
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = '../02-public-home/public-home.html';
+    });
 
     const form = document.getElementById('loginForm');
     const gstinInput = document.getElementById('gstin');

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EcoExchange</title>
+  <title>EcoExchange - Raised Requests</title>
 
   <!-- 1. Theme Persistence (Must be at the very top of <head>) -->
   <script>
@@ -20,10 +20,29 @@
 
   <!-- 2. Local CSS Output -->
   <link rel="stylesheet" href="../../styles/output.css">
+
+  <!-- Custom Slim Scrollbar Styling -->
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155; /* slate-700 */
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569; /* slate-600 */
+    }
+  </style>
 </head>
-<body class="h-full bg-slate-100/70 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen">
+<body class="h-full bg-slate-100/70 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
   <!-- Top Taskbar -->
-  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90 z-40">
+  <div class="h-14 w-full drag-region flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/90 z-40 shrink-0">
     <div class="flex items-center space-x-3">
       <button id="sidebarToggle" class="no-drag text-slate-400 hover:text-emerald-400 focus:outline-none transition-colors p-1 rounded-lg hover:bg-slate-900 cursor-pointer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -55,19 +74,21 @@
       <div class="p-4 border-t border-slate-800/80 text-[10px] text-slate-500 text-center uppercase">EcoExchange v1.0.0</div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-b from-slate-950/40 to-slate-950 w-full">
-      <div class="max-w-6xl mx-auto space-y-6">
+    <!-- Main Content Area -->
+    <main class="flex-1 p-8 bg-gradient-to-b from-slate-950/40 to-slate-950 w-full flex flex-col overflow-hidden">
+      <div class="max-w-6xl mx-auto space-y-6 w-full flex flex-col h-full">
         
-        <div class="flex items-center justify-between">
+        <!-- Header Controls -->
+        <div class="flex items-center justify-between shrink-0">
           <div>
             <h1 class="text-2xl font-black tracking-tight text-white uppercase">Your Raised Sell Requests & Inquiries</h1>
             <p class="text-xs text-slate-400 mt-1">Review buyer purchase requests. Click 'OK / Approve' to send the order back to the buyer for payment.</p>
           </div>
-          <a href="hub.html" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold uppercase transition-all">← Back to Hub</a>
+          <a href="hub.html" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold uppercase transition-all shrink-0">← Back to Hub</a>
         </div>
 
-        <div id="raisedRequestsContainer" class="space-y-6">
+        <!-- Scrollable Main Container for Raised Requests -->
+        <div id="raisedRequestsContainer" class="space-y-6 overflow-y-auto max-h-[calc(100vh-16rem)] pr-2 custom-scrollbar flex-1">
           <div class="p-8 text-center text-slate-500 italic bg-slate-900/30 border border-slate-800/80 rounded-2xl">
             Loading your raised requests and buyer inquiries...
           </div>
@@ -77,7 +98,8 @@
     </main>
   </div>
 
-  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500 z-40">
+  <!-- Bottom Status Bar -->
+  <div class="h-8 w-full bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 text-[10px] text-slate-500 z-40 shrink-0">
     <div>EcoExchange Raised Requests Hub</div>
     <div>Secure B2B Prototype v1.0</div>
   </div>
@@ -164,7 +186,7 @@
                     <p class="text-xs text-slate-400">Quantity: <strong class="text-slate-200">${req.amountInTons} Tons</strong> | Price: <strong class="text-slate-200">₹${Number(req.pricePerTon || 0).toLocaleString('en-IN')}/ton</strong> | Address: ${req.address}</p>
                   </div>
                   ${!isListingSold ? `
-                    <button onclick="cancelRaiseRequest('${req.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
+                    <button onclick="cancelRaiseRequest('${req.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0">
                       Cancel Listing
                     </button>
                   ` : ''}
@@ -173,10 +195,10 @@
                 <div>
                   <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Buyer Inquiries & Purchase Requests (${inquiries.length})</h4>
                   ${inquiries.length === 0 ? `<p class="text-xs text-slate-500 italic">No buyer has requested to buy this item yet.</p>` : `
-                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden">
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
                       <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <thead class="sticky top-0 bg-slate-950 z-10">
+                          <tr class="border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
                             <th class="p-3">Buyer Entity</th>
                             <th class="p-3">Requested Quantity</th>
                             <th class="p-3">Total Investment</th>
@@ -187,7 +209,6 @@
                         </thead>
                         <tbody class="divide-y divide-slate-800/60 text-slate-300">
                           ${inquiries.map(inq => {
-                            // Link directly to the buyer entity name (e.g., samsung) rather than their email ID
                             const targetChatUser = inq.buyerEntityName || inq.buyerEmail;
                             return `
                               <tr>
