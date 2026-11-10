@@ -106,7 +106,7 @@
             </div>
             <div>
               <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Price per Ton (₹)</label>
-              <input type="number" id="pricePerTon" required min="200" onkeydown="if(['-', 'e', 'E', '+', '.'].includes(event.key)) event.preventDefault();" placeholder="Enter rate (Min ₹200)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+              <input type="number" id="pricePerTon" required min="200" max="500000" onkeydown="if(['-', 'e', 'E', '+', '.'].includes(event.key)) event.preventDefault();" placeholder="Enter rate (Min ₹200)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
             </div>
           </div>
 
