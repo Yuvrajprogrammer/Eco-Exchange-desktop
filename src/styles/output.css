@@ -1359,6 +1359,10 @@ video {
   background-color: rgb(2 6 23 / var(--tw-bg-opacity, 1));
 }
 
+.bg-slate-950\/40 {
+  background-color: rgb(2 6 23 / 0.4);
+}
+
 .bg-slate-950\/60 {
   background-color: rgb(2 6 23 / 0.6);
 }
@@ -1382,10 +1386,6 @@ video {
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-}
-
-.bg-slate-950\/40 {
-  background-color: rgb(2 6 23 / 0.4);
 }
 
 .bg-gradient-to-b {
@@ -1842,11 +1842,6 @@ video {
 
 .shadow-emerald-600\/20 {
   --tw-shadow-color: rgb(5 150 105 / 0.2);
-  --tw-shadow: var(--tw-shadow-colored);
-}
-
-.shadow-emerald-600\/30 {
-  --tw-shadow-color: rgb(5 150 105 / 0.3);
   --tw-shadow: var(--tw-shadow-colored);
 }
 

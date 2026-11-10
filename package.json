@@ -4,17 +4,34 @@
   "description": "B2B Marketplace for Non-Hazardous Industrial Waste",
   "main": "src/main.js",
   "scripts": {
-  "start": "electron .",
-  "start:user2": "electron . --user-data-2",
-  "build:css": "npx tailwindcss -i ./src/styles/main.css -o ./src/styles/output.css --watch"
-},
+    "start": "electron .",
+    "start:user2": "electron . --user-data-2",
+    "build:css": "npx tailwindcss -i ./src/styles/main.css -o ./src/styles/output.css --watch",
+    "build": "electron-builder"
+  },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "electron": "^28.0.0",
     "firebase": "^10.8.0"
   },
   "devDependencies": {
-    "electron-builder": "^24.13.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.13.3",
     "tailwindcss": "^3.4.19"
+  },
+  "build": {
+    "appId": "com.ecoexchange.desktop",
+    "productName": "EcoExchange",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/icon.ico"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ]
   }
 }

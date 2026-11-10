@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 
 // Enable isolated session data when running a secondary test instance
@@ -17,6 +17,9 @@ function createWindow() {
       contextIsolation: true
     }
   });
+
+  // Completely remove the default application menu bar (File, Edit, View, etc.)
+  Menu.setApplicationMenu(null);
 
   // Load Form 1 (Splash Screen)
   mainWindow.loadFile(path.join(__dirname, 'components/01-splash/splash-screen.html'));

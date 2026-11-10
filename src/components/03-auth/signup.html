@@ -115,6 +115,14 @@
       const password = document.getElementById('password').value;
       const pledgeAccepted = document.getElementById('pledgeCheck').checked;
 
+      // Enterprise Name validation: allows letters, numbers, spaces, and specific allowed symbols
+      const validEntityNameRegex = /^[a-zA-Z0-9\s@#&()\[\]{}|\\:;"',.\/]+$/;
+      if (!validEntityNameRegex.test(entityName)) {
+        errorMsg.textContent = "Error: Enterprise name contains unallowed special characters.";
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
       if (!pledgeAccepted) {
         errorMsg.textContent = "Error: You must accept the non-hazardous pledge.";
         errorMsg.classList.remove('hidden');
